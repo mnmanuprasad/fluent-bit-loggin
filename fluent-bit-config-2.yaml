@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-config
+data:
+  fluent-bit.conf: |
+
+     [SERVICE]
+       Flush                      10
+       Log_Level                  info
+       Daemon                     off
+       storage.max_chunks_up      128
+       storage.path               /var/fluent/flb-storage-fluent/
+       storage.sync               normal
+       storage.checksum           off
+       storage.backlog.mem_limit  5M
+     [INPUT]
+       Name                                 tail
+       Tag                                  <namespace_name>/<container_name>/<container_name>.log
+       Tag_Regex                            (?<pod_name>[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)_(?<namespace_name>[^_]+)_(?<container_name>.+)-
+       Path                                 /var/log/containers/*.log
+       DB                                   /var/fluent/flb_kube-fluent.db
+       storage.type                         filesystem
+       storage.pause_on_chunks_overlimit    off
+       Refresh_Interval                     10
+       Read_from_Head                       True
+       Skip_Long_Lines                      Off
+       Buffer_Max_Size                      5MB
+       Mem_Buf_Limit                        10MB
+     [OUTPUT]
+       Name                      file
+       Match                     *
+       Path                      /home/ubuntu/flu_logs
+       Format                    plain
+       Mkdir                     true
